@@ -20,7 +20,7 @@ import ProbabilisticSampler from '../src/samplers/probabilistic_sampler';
 import RemoteSampler from '../src/samplers/remote_sampler';
 import RateLimitingSampler from '../src/samplers/ratelimiting_sampler';
 import { initTracer } from '../src/index.js';
-import opentracing from 'opentracing';
+import * as opentracing from 'opentracing';
 import RemoteThrottler from '../src/throttler/remote_throttler';
 import DefaultThrottler from '../src/throttler/default_throttler';
 import HTTPSender from '../src/reporters/http_sender.js';
