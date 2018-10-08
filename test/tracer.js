@@ -216,6 +216,25 @@ describe('tracer should', () => {
     });
   });
 
+  it('starts a child span when active span exists', () => {
+    let rootSpan = tracer.startSpan('root-op');
+    let childSpan = tracer.spanManager().activate(rootSpan, () => tracer.startSpan('child-op'));
+
+    assert.deepEqual(childSpan.context().parentId, rootSpan.context().spanId);
+  });
+
+  it("doesn't start child span of active when reference specified.", () => {
+    const parentContext = SpanContext.withBinaryIds(Utils.encodeInt64(10), Utils.encodeInt64(100), null, 1);
+
+    let rootSpan = tracer.startSpan('root-op');
+    let childSpan = tracer
+      .spanManager()
+      .activate(rootSpan, () => tracer.startSpan('child-op', { childOf: parentContext }));
+
+    assert.deepEqual(childSpan.context().parentId, parentContext.spanId);
+    assert.notDeepEqual(childSpan.context().parentId, rootSpan.context().spanId);
+  });
+
   it('inject plain text headers into carrier, and extract span context with the same value', () => {
     let keyOne = 'keyOne';
     let keyTwo = 'keyTwo';

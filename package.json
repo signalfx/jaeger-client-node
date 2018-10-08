@@ -15,10 +15,13 @@
   },
   "contributors": ["Yuri Shkuro <ys@uber.com>", "Won Jun Jang <wjang@uber.com>"],
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "node-int64": "^0.4.0",
+    "opentracing": "^0.14.2",
+    "prom-client": "^11.0.0",
     "thriftrw": "^3.5.0",
-    "xorshift": "^0.2.0",
-    "opentracing": "^0.14.0"
+    "uuid": "^3.2.1",
+    "xorshift": "^0.2.0"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",

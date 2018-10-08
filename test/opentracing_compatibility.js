@@ -10,7 +10,7 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-import * as apiCompatibilityChecks from 'opentracing/lib/test/api_compatibility.js';
+import apiCompatibilityChecks from 'opentracing/lib/test/api_compatibility.js';
 import { assert } from 'chai';
 import ConstSampler from '../src/samplers/const_sampler.js';
 import InMemoryReporter from '../src/reporters/in_memory_reporter.js';

@@ -10,6 +10,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
+import 'babel-polyfill';
 
 import BinaryCodec from './propagators/binary_codec';
 import ConstSampler from './samplers/const_sampler';
@@ -42,6 +43,7 @@ export default class Tracer {
   _metrics: any;
   _baggageSetter: BaggageSetter;
   _debugThrottler: Throttler & ProcessSetter;
+  _spanManager: any;
   _process: Process;
 
   /**
@@ -55,6 +57,8 @@ export default class Tracer {
    * @param {Object} [options.logger] - a logger matching NullLogger API from ./logger.js.
    * @param {Object} [options.baggageRestrictionManager] - a baggageRestrictionManager matching
    * BaggageRestrictionManager API from ./baggage.js.
+   * @param {Object} [options.spanManager] - opentracing(Sync/AsyncHook/AsyncWrap/Zone)SpanManager used
+   * for managing span scope.
    */
   constructor(
     serviceName: string,
@@ -78,6 +82,7 @@ export default class Tracer {
       this._metrics
     );
     this._debugThrottler = options.debugThrottler || new DefaultThrottler(false);
+    this._spanManager = options.spanManager || new opentracing.SyncSpanManager();
     this._injectors = {};
     this._extractors = {};
 
@@ -214,6 +219,13 @@ export default class Tracer {
       }
     }
 
+    if (!parent) {
+      const active = this.activeSpan();
+      if (active) {
+        parent = active.context();
+      }
+    }
+
     let spanKindValue = userTags[opentracing_tags.SPAN_KIND];
     let rpcServer = spanKindValue === opentracing_tags.SPAN_KIND_RPC_SERVER;
 
@@ -262,6 +274,59 @@ export default class Tracer {
       rpcServer,
       references
     );
+  }
+
+  /**
+   * Gets the span manager.
+   *
+   * @return {Object} - the span manager
+   */
+  spanManager(): any {
+    return this._spanManager;
+  }
+
+  /**
+   * Gets the currently active span.
+   *
+   * @return {Span} - the active Span.
+   */
+  activeSpan(): Span | null {
+    return this._spanManager.active();
+  }
+
+  /**
+   * Starts a span, activates the span, executes the function, and finishes the span.
+   *
+   * @param {string} operationName the name of the operation.
+   * @param {Object} options options for the newly created span.
+   * @param {Function} f the function to execute during span activation.
+   * @return {any} - the return value of the executed function.
+   */
+  runSpan(operationName: string, options: startSpanOptions, f: any): any {
+    const span = this.startSpan(operationName, options);
+    try {
+      return this._spanManager.activate(span, f);
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * Starts a span, activates the span, executes the async function, and finishes the span.
+   *
+   * @param {string} name the name of the operation.
+   * @param {SpanOptions} options options for the newly created span.
+   * @param {Function} f the function to execute during span activation.
+   * @return {any} - the return value of the executed function.
+   * @template A
+   */
+  async runSpanAsync(operationName: string, options: startSpanOptions, f: any): any {
+    const span = this.startSpan(operationName, options);
+    try {
+      return await this.spanManager().activate(span, f);
+    } finally {
+      span.finish();
+    }
   }
 
   /**
