@@ -1,6 +1,6 @@
 {
-  "name": "jaeger-client",
-  "version": "3.12.1dev",
+  "name": "@signalfx/jaeger-client",
+  "version": "3.12.1sm0",
   "description": "Jaeger binding for OpenTracing Node",
   "engines": {
     "node": ">=0.10"
@@ -23,6 +23,7 @@
     "uuid": "^3.2.1",
     "xorshift": "^0.2.0"
   },
+  "bundledDependencies": ["opentracing"],
   "devDependencies": {
     "babel-cli": "^6.11.4",
     "babel-istanbul": "^0.11.0",
@@ -76,7 +77,8 @@
     "test-throttler": "mocha --compilers js:babel-core/register test/throttler",
     "test-prom-metrics": "mocha --compilers js:babel-core/register test/metrics",
     "test-crossdock": "mocha --compilers js:babel-register crossdock/test",
-    "show-cover": "open coverage/lcov-report/index.html"
+    "show-cover": "open coverage/lcov-report/index.html",
+    "postinstall": "scripts/postinstall.sh"
   },
   "lint-staged": {
     "*.{js,json,md}": ["prettier --write", "git add"]
